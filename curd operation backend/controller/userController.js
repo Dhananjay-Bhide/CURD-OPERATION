@@ -29,7 +29,7 @@ export const addUser = (req, res) => {
   const user = req.body;
   const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD format
   if(user.dob >= today) {
-    return res.status(400).json({ error: "Date of birth cannot be in the future" });
+    return res.status(400).json({ error: "Date of birth cannot be greater than today" });
   }
   const query =
     "INSERT INTO users (firstname, lastname, dob, mobile, address) VALUES ($1, $2, $3, $4, $5) RETURNING *";
