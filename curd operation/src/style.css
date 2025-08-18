@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+.labeldiv {
+    @apply flex items-center gap-4
+}
+
+.label{
+    @apply font-medium text-xl 
+}
+
+.input {
+    @apply border border-b-black p-1 pl-2 rounded-sm focus:outline-none focus:ring-2 focus:ring-green-500
+}
+
+.button{
+    @apply p-3 bg-green-500 text-white text-xl rounded-xl hover:bg-blue-500 cursor-pointer
+}
