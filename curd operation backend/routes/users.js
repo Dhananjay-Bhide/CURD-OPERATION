@@ -15,6 +15,6 @@ router.put("/:id", updateUser);
 
 router.delete("/:id", deleteUser);
 
-// router.get("/:sort_column&:sort_order", sortTable);
+// router.get("/search/:sort_column&:sort_order", sortTable);
 
 module.exports = router;

@@ -3,36 +3,46 @@
 import { con } from "../db/database.js";
 
 export const getUsers = (req, res) => {
-  const {sort_column, sort_order} = req.query;
-  // console.log(sort_column, sort_order);
+  let {sort_column, sort_order, currentPage, usersPerPage, search} = req.query; //variable for sorting and pagination
 
-  if(sort_column&&sort_order){
-    const query = `SELECT id, firstname, lastname, TO_CHAR(dob, 'YYYY-MM-DD') AS dob, mobile, address FROM users ORDER BY ${sort_column} ${sort_order}`
-    con.query(query, (err, result) => {
-      if (err) {
-      console.error("Error executing query", err.stack);
-      return res.status(500).json({ error: "Database error" });
+  // Allowed sort columns to avoid SQL injection
+  const allowedSortColumns = ["id", "firstname", "lastname", "dob", "mobile", "address"];
+  const allowedSortOrders = ["asc", "desc"];
+
+  // Defaults
+  sort_column = allowedSortColumns.includes(sort_column) ? sort_column : "firstname";
+  sort_order = allowedSortOrders.includes(sort_order?.toLowerCase()) ? sort_order : "asc";
+  currentPage = Number(currentPage) || 1;
+  usersPerPage = Number(usersPerPage) || 5;
+
+  const offset = (currentPage - 1) * usersPerPage;
+
+  const pagesQuery = `SELECT COUNT(*) FROM users`;
+  const query = `SELECT id, firstname, lastname, TO_CHAR(dob, 'YYYY-MM-DD') AS dob, mobile, address FROM users ORDER BY ${sort_column} ${sort_order} LIMIT ${usersPerPage} OFFSET ${offset}`;
+
+  con.query(pagesQuery, (err, countResult) => {
+    if(err){
+        console.log("pagesquery error")
+        console.error("Error executing count query", err.stack);
+        return res.status(500).json({ error: "Database error" });
     }
-    res.status(200).json(result.rows);
-    })
-  } else{
-  const query = "SELECT id, firstname, lastname, TO_CHAR(dob, 'YYYY-MM-DD') AS dob, mobile, address FROM users";
-  // console.log("here")
+    const totalCount = parseInt(countResult.rows[0].count);
+  const totalPages = Math.ceil(totalCount/usersPerPage);
+  // console.log(totalCount);
   con.query(query, (err, result) => {
     if (err) {
+      console.log("query error");
       console.error("Error executing query", err.stack);
       return res.status(500).json({ error: "Database error" });
     }
-    res.status(200).json(result.rows);
+    res.status(200).json({
+      success: true,
+      message: "User created successfully",
+      data: {users: result.rows, currentPage: Number(currentPage), totalPages, totalCount}
+    });
   });
+  })
 }
-}
-
-// export const searchUsers = (req, res) => {
-//   const searchTerm = req.params.searchTerm;
-//   const query = "SELECT id, firstname, lastname, TO_CHAR(dob, 'YYYY-MM-DD') AS dob, mobile, address FROM users WHERE firstname=$1";
-// con.query
-// }
 
 export const getUserById = (req, res) => {
     const firstname = req.params.firstname;
@@ -40,9 +50,16 @@ export const getUserById = (req, res) => {
     con.query(query, [firstname], (err, result) => {
         if (err) {
         console.error("Error executing query", err.stack);
-        return res.status(500).json({ error: "Database error" });
+        return res.status(500).json(
+          { error: "Database error",
+            message: "User not created"
+          });
       } 
-      res.status(200).json(result.rows);
+      res.status(200).json({
+        success: true,
+        message: "User created successfully",
+        data: result.rows
+      });
       // console.log(result)
     })
 }
@@ -61,10 +78,17 @@ export const addUser = (req, res) => {
     (err, result) => {
       if (err) {
         console.error("Error executing query", err.stack);
-        return res.status(500).json({ error: "Database error" });
+        return res.status(500).json({ 
+          error: "Database error",
+          message: "Error" 
+        });
       } else {
         console.log("User added successfully");
-        res.status(201).json(result);
+        res.status(201).json({
+          success: true,
+          data: result,
+          message: "User added successfully"
+        });
       }
     }
   );
@@ -123,28 +147,3 @@ export const deleteUser = (req, res) => {
       .json({ message: "User deleted successfully", user: result.rows[0] });
   });
 }
-
-// export const sortTable = (req, res) => {
-//   const {sort_by, sort_order} = req.params;
-//   console.log("sort Table")
-//   // const sort_order = req.params.sort_order;
-//   console.log(sort_order)
-//   const query = `SELECT id, firstname, lastname, TO_CHAR(dob, 'YYYY-MM-DD') AS dob, mobile, address FROM users ORDER BY "${sort_by}" ${sort_order}`;
-//   con.query(query, [sort_by, sort_order], (err, result) => {
-//     if (err) {
-//         console.error("Error executing query", err.stack);
-//         return res.status(500).json({ error: "Database error" });
-//       } 
-//       console.log(result)
-//       res.status(200).json(result.rows);
-//   })
-// }
- 
-
-// module.exports = {
-//   getUsers,
-//   getUserById,
-//   addUser,
-//   updateUser,
-//   deleteUser
-// };
