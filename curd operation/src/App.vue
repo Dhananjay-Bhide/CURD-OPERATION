@@ -28,9 +28,16 @@ export default {
       firstnameUparrow: true,
       dobUparrow: true,
 
-      sortColumnOrder: "desc",
+      sortColumnOrder: "asc",
       sortDateOrder: "desc",
-      // sortColumn: "firstname",
+      sortColumn: "",
+
+      currentPage: 1,
+      usersPerPage: 5,
+      totalPages: 1,
+      totalUsers: 0,
+
+      // selectedOption: ''
     };
   },
 
@@ -77,11 +84,13 @@ export default {
       this.fetchData();
     },
 
-    async fetchData() {
+    async fetchData(sortOrder = this.sortColumnOrder) {
       try {
-        const response = await axios.get(`http://localhost:3000/api/users`);
+        const response = await axios.get(`http://localhost:3000/api/users?sort_column=${this.sortColumn}&sort_order=${sortOrder}&currentPage=${this.currentPage}&usersPerPage=${this.usersPerPage}`);
         console.log(response.data);
-        this.tabledata = response.data;
+        this.tabledata = response.data.data.users;
+        this.totalPages = response.data.data.totalPages;
+        this.totalUsers = response.data.data.totalCount;
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -96,7 +105,7 @@ export default {
             `http://localhost:3000/api/users/${searchTerm}`
           );
           console.log(response.data);
-          this.tabledata = response.data;
+          this.tabledata = response.data.data;
         } catch (error) {
           console.error("Error searching data:", error);
         }
@@ -171,7 +180,7 @@ export default {
       this.showcancelbtn();
     },
 
-    async sortTableByFirstname(sortColumn, sortOrder) {
+    async sortTableByFirstname(sortColumn) {
       // console.log(sortColumn)
       try {
         if (this.sortColumnOrder == "asc") {
@@ -179,11 +188,9 @@ export default {
         } else {
           this.sortColumnOrder = "asc";
         }
-        // console.log("this is try block")
-        const response = await axios.get(
-          `http://localhost:3000/api/users?sort_column=${sortColumn}&sort_order=${sortOrder}`
-        );
-        this.tabledata = response.data;
+        this.sortColumn = sortColumn;
+
+        await this.fetchData(this.sortColumnOrder);
         console.log(this.tabledata);
         this.firstnameUparrow = !this.firstnameUparrow;
       } catch (error) {
@@ -191,7 +198,7 @@ export default {
       }
     },
 
-    async sortTableByDateOfBirth(sortColumn, sortOrder) {
+    async sortTableByDateOfBirth(sortColumn) {
       // console.log(sortColumn)
       try {
         if (this.sortDateOrder == "asc") {
@@ -199,22 +206,49 @@ export default {
         } else {
           this.sortDateOrder = "asc";
         }
-        // console.log("this is try block")
-        const response = await axios.get(
-          `http://localhost:3000/api/users?sort_column=${sortColumn}&sort_order=${sortOrder}`
-        );
-        this.tabledata = response.data;
+        this.sortColumn = sortColumn;
+        await this.fetchData(this.sortColumnOrder);
+
+        // this.tabledata = response.data.data;
         console.log(this.tabledata);
         this.dobUparrow = !this.dobUparrow;
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     },
+
+    prevPage() {
+      if(this.currentPage > 1){
+        this.currentPage--;
+        this.fetchData();
+      }
+    },
+    nextPage() {
+      if(this.currentPage < this.totalPages){
+        this.currentPage++;
+        this.fetchData();
+      }
+    },
+    goToPage(pageNumber) {
+      this.currentPage = pageNumber;
+      this.fetchData();
+    }
   },
 
   mounted() {
     this.fetchData();
   },
+
+  // computed: {
+  //   paginatedItems() {
+  //     const startIndex = (this.currentPage - 1) * this.usersPerPage;
+  //     const endIndex = startIndex + this.usersPerPage;
+  //     return this.tabledata.slice(startIndex, endIndex);
+  //   },
+  //   totalPages(){
+  //     return Math.ceil(this.tabledata.length / this.usersPerPage);
+  //   }
+  // },
 };
 </script>
 
@@ -292,7 +326,12 @@ export default {
       </div>
     </form>
   </div>
+
   <div class="flex justify-end items-center mr-6">
+    <!-- <select name="" id="" v-model="selectedOption">
+      <option value="firstname">First Name</option>
+      <option value="id">Id</option>
+    </select> -->
     <input
       type="text"
       placeholder="Search by First Name"
@@ -318,13 +357,13 @@ export default {
               icon="arrow-up"
               class="text-[14px] p-2 cursor-pointer"
               @click="
-                sortTableByFirstname('firstname', this.sortColumnOrder)
+                sortTableByFirstname('firstname')
               " /></span
           ><span v-else class="absolute"
             ><font-awesome-icon
               icon="arrow-down"
               class="text-[14px] p-2 cursor-pointer"
-              @click="sortTableByFirstname('firstname', this.sortColumnOrder)"
+              @click="sortTableByFirstname('firstname')"
           /></span>
         </th>
         <th>Last Name</th>
@@ -335,13 +374,13 @@ export default {
               icon="arrow-up"
               class="text-[14px] p-2 cursor-pointer"
               @click="
-                sortTableByDateOfBirth('dob', this.sortDateOrder)
+                sortTableByDateOfBirth('dob')
               " /></span
           ><span v-else class="absolute"
             ><font-awesome-icon
               icon="arrow-down"
               class="text-[14px] p-2 cursor-pointer"
-              @click="sortTableByDateOfBirth('dob', this.sortDateOrder)"
+              @click="sortTableByDateOfBirth('dob')"
           /></span>
         </th>
         <th>Mobile No.</th>
@@ -394,73 +433,17 @@ export default {
     </tbody>
   </table>
 
-  <!-- <div v-if="showdelete">
-    <p>Are you sure you want to delete this user?</p>
-    <button @click="deleteuser(item.id)">Yes</button>
-    <button @click="showdelete = false">No</button>
-  </div> -->
+  <div class="pagination-controls flex justify-center gap-[15px] text-[17px] p-[13px]">
+      <button @click="prevPage()" :disabled="currentPage === 1" class="cursor-pointer">Previous</button>
+      <button 
+        v-for="page in totalPages" 
+        :key="page" 
+        @click="goToPage(page)" 
+        :class="currentPage==page ? 'text-blue-600 font-bold' : ''" class="cursor-pointer"
+      >
+        {{ page }}
+      </button>
+      <button @click="nextPage" :disabled="currentPage === totalPages" class="cursor-pointer">Next</button>
+    </div>
 </template>
 
-<!-- <style>
-div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-}
-
-div h1 {
-  font-size: 40px;
-  margin-bottom: 30px;
-}
-
-div form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-
-div form div {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-div input,
-textarea {
-  /* margin-bottom: 20px; */
-  margin-left: 20px;
-}
-
-div button {
-  justify-content: center;
-  display: flex;
-  align-items: center;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-tr,
-th,
-td {
-  border: 1px solid #000;
-  text-align: center;
-}
-
-.icons {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  align-items: center;
-  flex-direction: row;
-}
-</style> -->
