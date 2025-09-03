@@ -5,7 +5,7 @@ const app = express();
 // const cors = require('cors');
 import cors from 'cors';
 
-import index from './routes/index.js';
+import index from './src/routes/index.js';
 // require('dotenv').config();
 
 const PORT = process.env.PORT;
