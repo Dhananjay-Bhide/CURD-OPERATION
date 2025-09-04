@@ -170,3 +170,4 @@ export const deleteUser = (req, res) => {
       .json({ message: "User deleted successfully", user: result.rows[0] });
   });
 }
+
