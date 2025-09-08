@@ -4,7 +4,6 @@
       EDIT FORM
     </h1>
     <form
-      @submit.prevent="submitForm"
       class="space-y-8 flex flex-col items-center justify-center p-4"
     >
       <div class="labeldiv">
@@ -72,60 +71,57 @@
   </div>
 </template>
 
-<script>
-import { useUserStore } from '@/stores/userStore';
+<script setup lang="ts">
+import { useRoute, useRouter } from 'vue-router';
+import { useUserStore } from '../stores/userStore';
+import type { User } from '../types/types';
+import { onMounted, ref } from 'vue';
 
-export default {
-  setup() {
     const userStore = useUserStore();
-    console.log(userStore);
-    return { userStore };
-  },
-  data() {
-    return {
-      formdata: {
+    const router = useRouter();
+    const route = useRoute();
+
+    type UserInput = Omit<User, 'id'>;
+
+     const formdata = ref<UserInput>({
         firstname: "",
         lastname: "",
         dob: "",
-        mobile: "",
+        mobile: null as unknown as number,  // to avoid type error
         address: "",
-      },
-    };
-  },
+      });
 
-  methods: {
-    async loadUserData() {
-      const userId = this.$route.params.id;
+    const loadUserData = async () => {
+      const userId = Number(route.params.id);
       try {
-        const response = await this.userStore.getUserById(userId);
-        console.log("Fetched user data:", response[0]);
-        this.formdata = { ...response[0] }; // Populate formdata with the fetched user data
-        console.log("Loaded user data:", this.formdata);
+        const response = await userStore.getUserById(userId);
+        console.log("Fetched user data:", response);
+        if(response){
+        formdata.value = { ...response };         // Populate formdata with the fetched user data
+        // console.log("Loaded user data:", this.formdata);
+        }
       } catch (error) {
         console.error("Error loading user data:", error);
       }
-    },
+    };
 
-    async updateUser() {
+    const updateUser = async () => {
       try {
-        const userId = this.$route.params.id;
-        await this.userStore.updateUser(userId, this.formdata);
+        const userId = Number(route.params.id);
+        await userStore.updateUser(userId, formdata.value);
         console.log("User updated successfully");
-        await this.userStore.fetchData();
-        this.$router.push('/');
+        await userStore.fetchData();
+        router.push('/');
       } catch (error) {
         console.error("Error updating user:", error);
       }
-    },
+    };
 
-    cancelupdate() {
-      this.$router.push('/');
+    const cancelupdate = () => {
+      router.push('/');
     }
     
-  },
-
-  mounted() {
-    this.loadUserData();
-  }
-};
+  onMounted(() => {
+    loadUserData();
+  })
 </script>

@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <input type="search" v-model="searchTerm" placeholder="Search by First Name" class="input w-[300px] mt-4 ml-4 right-0"  @input="fetchData()" />
+  </div>
   <table class="w-[99%] border-collapse mt-2 text-center p-4 text-[18px] mb-2 h-[80%] mx-auto border-b-2">
     <thead class="">
       <tr class="bg-gray-200 p-7 text-md">
@@ -39,7 +42,7 @@
       </tr>
     </thead>
     <tbody class="text-center ">
-      <tr v-for="(item, index) in this.userStore.users" :key="index" class="even:bg-blue-50">
+      <tr v-for="(item, index) in userStore.users" :key="index" class="even:bg-blue-50">
         <td>{{ index + 1 }}</td>
         <td>{{ item.id }}</td>
         <td>{{ item.firstname }}</td>
@@ -88,24 +91,24 @@
     class="pagination-controls flex justify-center gap-[15px] text-[17px] p-[13px]"
   >
     <button
-      @click="goToPage(this.userStore.currentPage - 1)"
-      :disabled="this.userStore.currentPage === 1"
+      @click="goToPage(userStore.currentPage - 1)"
+      :disabled="userStore.currentPage === 1"
       class="cursor-pointer"
     >
       Previous
     </button>
     <button
-      v-for="page in this.userStore.totalPages"
+      v-for="page in userStore.totalPages"
       :key="page"
       @click="goToPage(page)"
-      :class="this.userStore.currentPage == page ? 'text-blue-600 font-bold' : ''"
+      :class="userStore.currentPage == page ? 'text-blue-600 font-bold' : ''"
       class="cursor-pointer"
     >
       {{ page }}
     </button>
     <button
-      @click="goToPage(this.userStore.currentPage + 1)"
-      :disabled="this.userStore.currentPage === this.userStore.totalPages"
+      @click="goToPage(userStore.currentPage + 1)"
+      :disabled="userStore.currentPage === userStore.totalPages"
       class="cursor-pointer"
     >
       Next
@@ -118,116 +121,111 @@
   </div>
 </template>
 
-<script>
-import { useUserStore } from "@/stores/userStore"
+<script setup lang="ts">
+import { useUserStore } from "../stores/userStore"
 import axios from "axios";
+import type { User} from "../types/types";
+import { onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 
-export default {
-  setup() {
+const router = useRouter()
+
+
     const userStore = useUserStore();
-    console.log(userStore);
-    return { userStore };
-  },
-  data() {
-    return {
-      // tabledata: [],
+    // console.log(userStore);
       
-      showupdate: false,
+      const showupdate = ref(false);
       // showdelete: false,
-      showdeleteicons: true,
-      showcancelicon: false,
-      errormessage: null,
+      const showdeleteicons = ref(true);
+      const showcancelicon = ref(false);
+      const errormessage = ref(null);
 
-      searchTerm: "",
+      const searchTerm = ref("");
 
-      firstnameUparrow: true,
-      dobUparrow: true,
+      const firstnameUparrow = ref(true);
+      const dobUparrow = ref(true);
 
-      sortColumnOrder: "asc",
-      sortDateOrder: "desc",
-      sortColumn: "",
+      const sortColumnOrder = ref("asc");
+      const sortDateOrder = ref ("desc");
+      const sortColumn = ref("");
 
+
+    const fetchData = async (sortOrder: string = sortColumnOrder.value) => {
+      await userStore.fetchData({ sort_column: sortColumn.value, sortOrder, currentPageVal: userStore.currentPage, usersPerPageVal: userStore.usersPerPage, search: searchTerm.value })
     };
-  },
 
-  methods: {
-    async fetchData(sortOrder = this.userStore.sortColumnOrder) {
-      await this.userStore.fetchData({ sortColumn: this.userStore.sortColumn, sortOrder, currentPage: this.userStore.currentPage, usersPerPage: this.userStore.usersPerPage })
-    },
-
-    async sortTableByFirstname(sortColumn) {
+    const sortTableByFirstname = async (sortColumnName: string) => {
       // console.log(sortColumn)
       try {
-        if (this.sortColumnOrder == "asc") {
-          this.sortColumnOrder = "desc";
+        if (sortColumnOrder.value == "asc") {
+          sortColumnOrder.value = "desc";
         } else {
-          this.sortColumnOrder = "asc";
+          sortColumnOrder.value = "asc";
         }
-        this.sortColumn = sortColumn;
+        sortColumn.value = sortColumnName;
 
-        await this.fetchData(this.sortColumnOrder);
-        console.log(this.tabledata);
-        this.firstnameUparrow = !this.firstnameUparrow;
+        await fetchData(sortColumnOrder.value);
+        // console.log(this.tabledata);
+        firstnameUparrow.value = !firstnameUparrow.value;
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-    },
+    };
 
-    async sortTableByDateOfBirth(sortColumn) {
+    const sortTableByDateOfBirth = async (sortColumnName: string) => {
       // console.log(sortColumn)
       try {
-        if (this.sortDateOrder == "asc") {
-          this.sortDateOrder = "desc";
+        if (sortDateOrder.value == "asc") {
+          sortDateOrder.value = "desc";
         } else {
-          this.sortDateOrder = "asc";
+          sortDateOrder.value = "asc";
         }
-        this.sortColumn = sortColumn;
-        await this.fetchData(this.sortColumnOrder);
+        sortColumn.value = sortColumnName;
+        await fetchData(sortColumnOrder.value);
 
         // this.tabledata = response.data.data;
-        console.log(this.tabledata);
-        this.dobUparrow = !this.dobUparrow;
+        // console.log(this.tabledata);
+        dobUparrow.value = dobUparrow.value;
       } catch (error) {
         console.error("Error fetching data:", error);
       }
-    },
+    };
 
-    goToPage(pageNumber) {
-      if (pageNumber < 1 || pageNumber > this.userStore.totalPages) return;
-      this.userStore.currentPage = pageNumber;
-      this.fetchData();
-    },
+    const goToPage = (pageNumber: number) => {
+      if (pageNumber < 1 || pageNumber > userStore.totalPages) return;
+      userStore.currentPage = pageNumber;
+      fetchData();
+    };
 
-    async deleteuser(id) {
+    const deleteuser = async (id: number) => {
       // this.showdelete = !this.showdelete
       try {
-        await this.userStore.deleteUser(id);
-        await this.userStore.fetchData();
-        this.showcancelbtn();
+        await userStore.deleteUser(id);
+        await userStore.fetchData();
+        showcancelbtn();
       } catch (error) {
         console.error("Error deleting user:", error);
       }
-    },
+    };
 
-    canceldelete() {
-      this.showcancelbtn();
-    },
+    const canceldelete = () => {
+      showcancelbtn();
+    };
     
-    showupdatebtn(user) {
+    const showupdatebtn = (user: User) => {
       // this.formdata = { ...user };
       // this.showupdate = !this.showupdate;
       // this.showsubmit = !this.showsubmit;
       // console.log("User data for update:", this.formdata);
-      this.$router.push('/editUser/' + user.id);
-    },
+      router.push('/editUser/' + user.id);
+    };
 
-    showcancelbtn() {
-      this.showdeleteicons = !this.showdeleteicons;
-      this.showcancelicon = !this.showcancelicon;
-    },
-  },
-   mounted() {
-    this.fetchData();
-  },
-};
+    const showcancelbtn = () => {
+      showdeleteicons.value = !showdeleteicons.value;
+      showcancelicon.value = showcancelicon.value;
+    };
+    
+    onMounted(() => {
+    fetchData();
+  })
 </script>
