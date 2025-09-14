@@ -1,5 +1,6 @@
-node_modules
 .env
 package-lock.json
 tsconfig.json
 dist
+node_modules
+.DS_Store
