@@ -2,5 +2,5 @@
 package-lock.json
 tsconfig.json
 dist
-node_modules
+node_modules/
 .DS_Store
