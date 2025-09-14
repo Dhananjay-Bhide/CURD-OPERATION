@@ -58,50 +58,47 @@
         ></textarea>
       </div>
       <button type="submit" class="button">Submit</button>
-      
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useUserStore } from '../stores/userStore';
-import { useRoute, useRouter } from 'vue-router';
-import type { User } from '../types/types';
+import { ref } from "vue";
+import { useUserStore } from "../stores/userStore";
+import { useRoute, useRouter } from "vue-router";
+import type { User } from "../types/types";
 
-    const userStore = useUserStore();
-    const router = useRouter();
+const userStore = useUserStore();
+const router = useRouter();
 
-    type UserInput = Omit<User, 'id'>;
+type UserInput = Omit<User, "id">;
 
-      const formdata = ref<UserInput>({
-        firstname: "",
-        lastname: "",
-        dob: "",
-        mobile: null as unknown as number,  // to avoid type error
-        address: "",
-      });
+const formdata = ref<UserInput>({
+  firstname: "",
+  lastname: "",
+  dob: "",
+  mobile: null as unknown as number, // to avoid type error
+  address: "",
+});
 
-      // const showsubmit = ref(true);
+// const showsubmit = ref(true);
 
-    const submitForm = async () => {
-      
-      const newUser: UserInput = {
-        ...formdata.value,
-        mobile: Number(formdata.value.mobile), // Converting mobile to number because input returns string
-      }
-      await userStore.addUser(newUser);
-      // console.log(this.tabledata);
- 
-      formdata.value.firstname = "";
-      formdata.value.lastname = "";
-      formdata.value.dob = "";
-      formdata.value.mobile = 0;
-      formdata.value.address = "";
+const submitForm = async () => {
+  const newUser: UserInput = {
+    ...formdata.value,
+    mobile: Number(formdata.value.mobile), // Converting mobile to number because input returns string
+  };
+  await userStore.addUser(newUser);
+  // console.log(this.tabledata);
 
-      await userStore.fetchData();
+  formdata.value.firstname = "";
+  formdata.value.lastname = "";
+  formdata.value.dob = "";
+  formdata.value.mobile = null as unknown as number;
+  formdata.value.address = "";
 
-      router.push('/');
-    };
-    
+  await userStore.fetchData();
+
+  router.push("/");
+};
 </script>

@@ -1,1 +1,0 @@
-{"version":3,"file":"userStore.d.ts","sourceRoot":"","sources":["../../src/stores/userStore.ts"],"names":[],"mappings":"AAIA,OAAO,KAAK,EAAE,IAAI,EAAE,MAAM,mBAAmB,CAAC;AAC9C,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,mBAAmB,CAAC;AAEnD,eAAO,MAAM,YAAY;WAER,IAAI,EAAE;;;;;;;;;;;;;qBA6BI,SAAS;wBAaN,MAAM;uBAcP,MAAM,QAAQ,SAAS;uBAiBvB,MAAM;EAQjC,CAAC"}

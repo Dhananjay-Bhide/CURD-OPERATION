@@ -7,8 +7,8 @@ import cors from 'cors';
 
 import index from './src/routes/index.js';
 // require('dotenv').config();
-import dotenv from 'dotenv';
-dotenv.config();
+// import dotenv from 'dotenv';
+// dotenv.config();
 
 const PORT = process.env.PORT;
 

@@ -14,19 +14,20 @@ import AllUsers from './Components/AllUsers.vue';
 import { createPinia } from 'pinia';
 import AddUser from './Components/AddUser.vue';
 import EditUser from './Components/EditUser.vue';
+import router from './Routes/routes.js';
 
 library.add(faTrash, faPenToSquare, faCheck, faXmark, faArrowDown, faArrowUp);
 
-const router = createRouter({
-    history: createWebHistory(),
-    routes: [
-        { path: '/', component: AllUsers},
-        { path: '/addUser', component: AddUser },
-        { path: '/editUser/:id', component: EditUser, props: true }
-    ]
-})
+// const router = createRouter({
+//     history: createWebHistory(),
+//     routes: [
+//         { path: '/', component: AllUsers},
+//         { path: '/addUser', component: AddUser },
+//         { path: '/editUser/:id', component: EditUser, props: true }
+//     ]
+// })
 
-const app = createApp(App)
+const app = createApp(App) 
 
 app.use(createPinia())
 app.use(router);

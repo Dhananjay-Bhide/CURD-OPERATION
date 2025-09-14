@@ -63,7 +63,7 @@
         >
           Update
         </button>
-        <button class="button" @click="cancelupdate()">
+        <button class="button" @click="cancelUpdate()">
           Cancel
         </button>
       </div>
@@ -117,7 +117,7 @@ import { onMounted, ref } from 'vue';
       }
     };
 
-    const cancelupdate = () => {
+    const cancelUpdate = () => {
       router.push('/');
     }
     
