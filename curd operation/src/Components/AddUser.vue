@@ -57,51 +57,51 @@
           required
         ></textarea>
       </div>
-      <button type="submit" v-show="showsubmit" class="button">Submit</button>
+      <button type="submit" class="button">Submit</button>
       
     </form>
   </div>
 </template>
 
-<script>
-import { useUserStore } from '@/stores/userStore';
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useUserStore } from '../stores/userStore';
+import { useRoute, useRouter } from 'vue-router';
+import type { User } from '../types/types';
 
-export default {
-  setup() {
     const userStore = useUserStore();
-    console.log(userStore);
-    return { userStore };
-  },
-  data() {
-    return {
-      formdata: {
+    const router = useRouter();
+
+    type UserInput = Omit<User, 'id'>;
+
+      const formdata = ref<UserInput>({
         firstname: "",
         lastname: "",
         dob: "",
-        mobile: "",
+        mobile: null as unknown as number,  // to avoid type error
         address: "",
-      },
-      showsubmit: true,
-    };
-  },
+      });
 
-  methods: {
-    async submitForm() {
+      // const showsubmit = ref(true);
+
+    const submitForm = async () => {
       
-      await this.userStore.addUser(this.formdata);
-      console.log(this.tabledata);
+      const newUser: UserInput = {
+        ...formdata.value,
+        mobile: Number(formdata.value.mobile), // Converting mobile to number because input returns string
+      }
+      await userStore.addUser(newUser);
+      // console.log(this.tabledata);
  
-      this.formdata.firstname = "";
-      this.formdata.lastname = "";
-      this.formdata.dob = "";
-      this.formdata.mobile = "";
-      this.formdata.address = "";
+      formdata.value.firstname = "";
+      formdata.value.lastname = "";
+      formdata.value.dob = "";
+      formdata.value.mobile = 0;
+      formdata.value.address = "";
 
-      await this.userStore.fetchData();
+      await userStore.fetchData();
 
-      this.$router.push('/');
-    },
+      router.push('/');
+    };
     
-  }
-};
 </script>
