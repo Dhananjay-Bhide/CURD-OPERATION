@@ -13,15 +13,15 @@ export const useUserStore = defineStore("user", () => {
   const usersPerPage = ref(5);
 
   async function fetchData({
-    sort_column = "id",
-    sortOrder = "asc",
-    currentPageVal = 1,
-    usersPerPageVal = 5,
+    sort_column = "",
+    sort_order = "",
+    currentPageVal = currentPage.value,
+    usersPerPageVal = usersPerPage.value,
     search = "",
   } = {}): Promise<void> {
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/users?sort_column=${sort_column}&sort_order=${sortOrder}&currentPage=${currentPageVal}&usersPerPage=${usersPerPageVal}&search=${search || ""}`
+        `http://localhost:3000/api/users?sort_column=${sort_column}&sort_order=${sort_order}&currentPage=${currentPageVal}&usersPerPage=${usersPerPageVal}&search=${search || ""}`
       );
       users.value = response.data.data.users as User[];
       totalPages.value = response.data.data.totalPages;
