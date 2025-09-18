@@ -9,23 +9,10 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { faCheck, faXmark, faArrowDown, faArrowUp } from '@fortawesome/free-solid-svg-icons';
-import { createRouter, createWebHistory } from 'vue-router';
-import AllUsers from './Components/AllUsers.vue';
 import { createPinia } from 'pinia';
-import AddUser from './Components/AddUser.vue';
-import EditUser from './Components/EditUser.vue';
 import router from './Routes/routes.js';
 
 library.add(faTrash, faPenToSquare, faCheck, faXmark, faArrowDown, faArrowUp);
-
-// const router = createRouter({
-//     history: createWebHistory(),
-//     routes: [
-//         { path: '/', component: AllUsers},
-//         { path: '/addUser', component: AddUser },
-//         { path: '/editUser/:id', component: EditUser, props: true }
-//     ]
-// })
 
 const app = createApp(App) 
 

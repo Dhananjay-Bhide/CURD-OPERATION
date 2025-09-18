@@ -7,4 +7,7 @@ export interface User {
     address: string;
 }
 
-// export type UserInput = User
+export interface LoginInput {
+    email: string;
+    password: string;
+}

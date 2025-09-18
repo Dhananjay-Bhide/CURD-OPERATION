@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import axios from "axios";
-import type { User } from "../types/types.js";
+import type { LoginInput, User } from "../types/types.js";
 
 export type UserInput = Omit<User, "id">;
 
@@ -11,6 +11,8 @@ export const useUserStore = defineStore("user", () => {
   const totalUsers = ref(0);
   const currentPage = ref(1);
   const usersPerPage = ref(5);
+
+  const isAuthorized = ref(false);
 
   async function fetchData({
     sort_column = "",
@@ -35,7 +37,11 @@ export const useUserStore = defineStore("user", () => {
 
   async function addUser(newUser: UserInput): Promise<void> {
     try {
-      const response = await axios.post(`http://localhost:3000/api/users`, newUser);
+      const response = await axios.post(`http://localhost:3000/api/users`, newUser, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem("token")}`
+        }
+      });
       users.value.push(response.data.data as User);
     } catch (error) {
       console.error("Error adding user:", error);
@@ -44,7 +50,11 @@ export const useUserStore = defineStore("user", () => {
 
   async function getUserById(userId: number): Promise<User | null | undefined> {
     try {
-      const response = await axios.get(`http://localhost:3000/api/users/${userId}`);
+      const response = await axios.get(`http://localhost:3000/api/users/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem("token")}`
+        }
+      });
       const users: User[] = response.data.data;
       return users.length > 0 ? users[0] : null;
     } catch (error) {
@@ -55,7 +65,11 @@ export const useUserStore = defineStore("user", () => {
 
   async function updateUser(userId: number, data: UserInput): Promise<void> {
     try {
-      const response = await axios.put(`http://localhost:3000/api/users/${userId}`, data);
+      const response = await axios.put(`http://localhost:3000/api/users/${userId}`, data, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem("token")}`
+        }
+      });
       const index = users.value.findIndex((user) => user.id === userId);
       if (index !== -1) {
         users.value[index] = response.data.data as User;
@@ -67,10 +81,30 @@ export const useUserStore = defineStore("user", () => {
 
   async function deleteUser(userId: number): Promise<void> {
     try {
-      await axios.delete(`http://localhost:3000/api/users/${userId}`);
+      await axios.delete(`http://localhost:3000/api/users/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem("token")}`
+        }
+      });
       users.value = users.value.filter((user) => user.id !== userId);
     } catch (error) {
       console.error("Error deleting user:", error);
+    }
+  }
+
+  async function adminLogin(loginData: LoginInput): Promise<void> {
+    try{
+      const response = await axios.post(`http://localhost:3000/api/login`, loginData);
+      console.log("Login response: ", response.data);
+      // Handle login success (e.g., store token, redirect, etc.)
+      localStorage.setItem("token", response.data.token);
+      if(response.data.token){
+        isAuthorized.value = true;
+      } else {
+        isAuthorized.value = false;
+      }
+    } catch(error){
+      console.error("Error during admin login: ", error);
     }
   }
 
@@ -85,5 +119,7 @@ export const useUserStore = defineStore("user", () => {
     getUserById,
     updateUser,
     deleteUser,
+    adminLogin,
+    isAuthorized
   };
 });
