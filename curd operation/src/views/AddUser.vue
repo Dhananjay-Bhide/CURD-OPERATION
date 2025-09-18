@@ -1,7 +1,7 @@
 <template>
   <div id="app" class="flex flex-col items-center justify-center">
     <h1 class="text-5xl w-full text-center bg-green-500 text-white p-4 mb-6">
-      CRUD FORM
+      Add User
     </h1>
     <form
       @submit.prevent="submitForm"

@@ -7,8 +7,12 @@
       class="input w-[300px] mt-0 ml-4"
       @input="fetchData()"
     />
-    <div class="right-[3rem] relative text-md">
+    <div v-if="userStore.isAuthorized" class="right-[3rem] relative text-md gap-1.5 flex">
       <router-link to="/addUser" class="button">Add User</router-link>
+      <button class="button" @click="logout">Logout</button>
+    </div>
+    <div v-else class="right-[3rem] relative text-md">
+      <router-link to="admin/login" class="button">Login</router-link>
     </div>
   </div>
   <table
@@ -49,7 +53,7 @@
         </th>
         <th class="p-2.5">Mobile No.</th>
         <th class="p-2.5">Address</th>
-        <th class="p-2.5"></th>
+        <th v-if="userStore.isAuthorized" class="p-2.5"></th>
       </tr>
     </thead>
     <tbody class="text-center">
@@ -65,7 +69,7 @@
         <td>{{ item.dob }}</td>
         <td>{{ item.mobile }}</td>
         <td>{{ item.address }}</td>
-        <td>
+        <td v-if="userStore.isAuthorized">
           <div class="flex justify-center items-center gap-1">
             <!-- Normal state (show edit + delete) -->
             <template v-if="activeRowId !== item.id">
@@ -173,6 +177,8 @@ const sortDateOrder = ref("desc");
 const sortOrder = ref("");
 const sortColumn = ref("");
 
+// const isAuthorized = ref(false);
+
 const activeRowId = ref<number | null>(null);
 
 const fetchData = async () => {
@@ -248,10 +254,6 @@ const cancelDelete = () => {
 };
 
 const showUpdateBtn = (user: User) => {
-  // this.formdata = { ...user };
-  // this.showupdate = !this.showupdate;
-  // this.showsubmit = !this.showsubmit;
-  // console.log("User data for update:", this.formdata);
   router.push("/editUser/" + user.id);
 };
 
@@ -261,7 +263,20 @@ const showCancelBtn = (id: number) => {
   showCancelIcon.value = !showCancelIcon.value;
 };
 
+const logout = () => {
+  localStorage.removeItem("token");
+  userStore.isAuthorized = false;
+  router.push("/");
+}
+
 onMounted(() => {
   fetchData();
+  const storedToken = localStorage.getItem("token");
+  if(storedToken) {
+    userStore.isAuthorized = true;
+  }
+  else{
+    userStore.isAuthorized = false;
+  }
 });
 </script>
